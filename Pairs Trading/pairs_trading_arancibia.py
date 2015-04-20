@@ -1,5 +1,17 @@
 '''
 This is the pairs trading algorithm implemented on the quantopian website
+The pairs used to do the trading are Coco-Cola and Pepsi, Walmart and Target, and HP Billiton and BHP Billiton
+what is interesting is that when HP Billiton and BHP Billiton are removed then the performance decreases. This makes sense
+based on the whole premise of pairs trading. What was useful about this assignment and really drove the point home is that
+pairs trading through different markets has more of an effect than pairs trading with a specific market, i.e. diversification
+with Coco-Cola and Pepsi and Walmart and Target (instead of using like Lipton and Snapple as other set of pairs). 
+As the assignment said there are three parts (create pairs, the trading, and testing cointegration).
+
+Total Returns = 299.9%
+Benchmark Returns = 73.9%
+Alpha = 0.94
+Beta = -1.62
+Sharpe = 1.48
 
 '''
 import statsmodels.tsa.stattools as ts
@@ -17,11 +29,11 @@ def initialize(context):
                       [sid(8229), sid(21090)],
                       [sid(863), sid(25165)]]
     
-    # Declare lag value/flag
+    # lag value/flag
     context.warmupDays = 60
     context.warmedUp = False
     
-    # Initialize ratio, historical, and current holdings
+    # create ratio, historical, and current holdings
     lenCon = len(context.stocks)
     context.ratio = [[]] * lenCon
     context.historical = [[[],[]]] * lenCon
@@ -106,7 +118,7 @@ def handle_data(context, data):
                         order(currY, -currOwnedY)
                         context.limits[pair] = False
             
-            # Initial Trade
+            # first trade
             lowerLim = -100000
             # currOwnedX < upperLim and and currOwnedY < upperLim
             if currOwnedX > lowerLim  and currOwnedY > lowerLim:          
@@ -123,7 +135,7 @@ def handle_data(context, data):
                         print("Shorted " + str(stocksToOrderY) + " stocks of " + str(currY))
                         context.limits[pair] = [pair, spreadMean, 'long']
 
-            # Logging data
+            # data retention
             context.historical[pair][0].append(data[currPair[0]].price)
             context.historical[pair][1].append(data[currPair[1]].price)
 
