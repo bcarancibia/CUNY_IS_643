@@ -10,7 +10,9 @@ For this assignment I implemented a random forest classifier. I used this machin
 
 https://www.quantopian.com/posts/simple-machine-learning-example
 
-
+Alpha = 115.20
+Beta = -22.35
+Sharpe = 1.59
 
 '''
 
@@ -33,32 +35,30 @@ def initialize(context):
     context.daysTillSale = []
         
 def handle_data(context, data):
-    # If you would like to trade on more than 1 stock, you could use the i to iterate
     i = 0
-    # Iterate through and sell stocks that need to be sold
+    #iterate and sell stocks
     for j in range(len(context.daysTillSale)):
         context.daysTillSale[i][0] = context.daysTillSale[i][0] - 1
         if context.daysTillSale[i][0] <= 0:
             order(context.stocks[i], -(context.daysTillSale[i][1]))
     
-    # Training
+    #training
     if context.warmuptest == False:
         print('training')
         currHist = history(bar_count=context.years * context.workingDays, frequency='1d', field='price')[context.stocks[i]]
         context.models.append(train_model(currHist, context))
         context.warmuptest = True
         
-    # Getting days of history
+    #history
     testHist = history(bar_count=context.historicalDays, frequency='1d', field='price')[context.stocks[i]]
     testChanges = []
     
-    # Percent Change
+    #delta
     for j in range(len(testHist)-1):
         testChanges.append((testHist[j+1] - testHist[j])/testHist[j])
     
-    # The prediction
     prediction = context.models[i].predict(testChanges)[0]
-    # Trades on the prediction
+    #trades
     if prediction == 1:
         order(context.stocks[i], context.amountToBuy)
         context.daysTillSale.append([context.predictionDays, context.amountToBuy])
@@ -67,15 +67,15 @@ def handle_data(context, data):
         context.daysTillSale.append([context.predictionDays, -(context.amountToBuy)])
     
 def train_model(currHist, context):
-    # Creates the training datasets, x being the variables, y being the classification
+    #training datasets
     trainingX = []
     trainingY = []
     priceChanges = []
-    # Percent Change
+    #delta
     for i in range(len(currHist)-1):
         priceChanges.append((currHist[i+1] - currHist[i])/currHist[i])
     
-    # Creates the dataset from the history
+    #dataset creation
     for i in range(len(currHist) - (context.historicalDays + context.predictionDays)):
         currDay = (i + context.historicalDays + context.predictionDays)
         currValue = 0
@@ -89,7 +89,7 @@ def train_model(currHist, context):
         trainingX.append(tempList)
         trainingY.append(currValue)
         
-    # Trains the classifier
+    #classifier
     clf = rfc()
     clf.fit(trainingX, trainingY)
     return(clf)
