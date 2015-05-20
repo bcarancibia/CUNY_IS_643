@@ -29,12 +29,11 @@ import numpy as np
 import random
 
 # Algorithm plots both the observed price and the signal produced
-# by the Kalman filter for assets in the universe.
 
 def initialize(context):
-    # Set total number of securities
+    #2 securities
     context.total_securites = 2
-    # Select securites
+    #apple and google
     context.securites = [sid(26578), sid(24)]
     context.X = np.zeros((context.total_securites*2,1))
     context.P = np.diag(np.zeros(context.total_securites*2))
@@ -47,7 +46,7 @@ def initialize(context):
     context.R = eye(context.Y.shape[0])
 
 def handle_data(context, data):
-   #prediction step 
+   #prediction
    (context.X, context.P) = kalman_predict(context.X, context.P, context.A, context.Q, context.B, context.U)
    #update
    (context.X, context.P, K, IM, IS, LH) = kalman_update(context.X, context.P, context.Y, context.H, context.R)  
@@ -62,30 +61,28 @@ def handle_data(context, data):
    record(GOOG_actual = goog_price_observed, GOOG_filtered = goog_price_filter)
    record(AAPL_actual = aapl_price_observed, AAPL_filtered = aapl_price_filter) 
 
-# X is the mean state estimate of the previous step (k-1)
-# P is the state covariance matrix of the previous step (k-1)
-# A is the transition nxn matrix
-# Q is the process noise covariance matrix
-# B is the input effect matrix
-# U is the control input
+# X = mean state estimate of the previous step (k-1)
+# P = state covariance matrix of the previous step (k-1)
+# A = transition nxn matrix
+# Q = process noise covariance matrix
+# B = input effect matrix
+# U = control input
 
 def kalman_predict(X, P, A, Q, B, U):
     X = dot(A, X) + dot(B, U)
     P = dot(A, dot(P, A.T)) + Q
     return(X,P)
 
+
 #update
-
-# At time step k, this update computes the posterior mean X and 
-# covariance P of the system state given a new measurement Y. 
-
-# Y is the measurement vector
-# H is the measurement matrix
-# R is the measurement covariance matrix
-# K is the Kalman Gain matrix
-# IM is the mean of the predictive distribution of Y
-# IS is the covariance of the predictive mean of Y
-# LH is the predictive probability (lieklihood) of measurement
+# At time step k, this update computes the posterior mean X and covariance P of the system state given a new measurement Y. 
+# Y = measurement vector
+# H = measurement matrix
+# R = measurement covariance matrix
+# K = Kalman Gain matrix
+# IM = mean of the predictive distribution of Y
+# IS = covariance of the predictive mean of Y
+# LH = predictive probability (lieklihood) of measurement
 
 def kalman_update(X, P, Y, H, R):
     IM = dot(H, X)
